@@ -113,16 +113,19 @@
   }
   
   Waterfall.prototype.prepare = function () {
-    $(window).on('scroll', $.proxy(this.sail, this))
+    $(window).on('scroll', this.sail())
     
     return this
   }
   
-  Waterfall.prototype.sail = _.throttle($.proxy(function () {
-    if (self.isWantMore.call(this)) {
-      this.ship()
-    }
-  }, this), 500)
+  Waterfall.prototype.sail = function () {
+    var that = this
+    return _.throttle(function () {
+      if (self.isWantMore.call(that)) {
+        that.ship()
+      }    
+    }, 500)
+  }
   
   Waterfall.prototype.ship = function () {
     var $pins = self.getToLoadPins.call(this)
@@ -141,7 +144,7 @@
   }
   
   Waterfall.prototype.hold = function () {
-    $(window).off('scroll', $.proxy(this.sail, this))
+    $(window).off('scroll')
   }
   
   Waterfall.prototype.render = function ($pins) {
