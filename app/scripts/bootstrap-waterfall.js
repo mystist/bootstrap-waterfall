@@ -64,7 +64,7 @@
     this
       .initPins()
       .calculatePosition()
-      .prepare()
+      .runCompass()
       .ship()
   }
   
@@ -100,6 +100,18 @@
     return this
   }
   
+  Waterfall.prototype.runCompass = function () {
+    var that = this
+    var timerId = setInterval(function () {
+      if (that.$element.closest('body').length < 1) { // Check if user had left the page.
+        clearInterval(timerId)
+        that.destroy()
+      }
+    }, 777)
+    
+    return this
+  }
+  
   Waterfall.prototype.prepare = function () {
     $(window).on('scroll', $.proxy(this.sail, this))
     
@@ -121,8 +133,10 @@
       .load()
       .run()
       .deferred.done($.proxy(function () {
-        this.render($pins)
-        this.prepare()
+        this
+          .render($pins)
+          .updateHeight()
+          .prepare()
       }, this))
   }
   
@@ -135,6 +149,8 @@
     $pins.each(function () {
       that.placePin($(this))
     })
+    
+    return this
   }
   
   Waterfall.prototype.placePin = function ($pin) {
@@ -152,9 +168,21 @@
     self.updatePositionByIndexAndPin.call(this, minIndex, $pin)
   }
   
+  Waterfall.prototype.updateHeight = function () {
+    var maxIndex = this.tops.indexOf(helper.m(this.tops).max)
+    this.$element.height(this.tops[maxIndex])
+    
+    return this
+  }
+  
+  Waterfall.prototype.destroy = function () {
+    this.hold()
+    this.$element.remove()
+  }
+  
   var self = {
     getToLoadPins: function () {
-      var steps = 20
+      var steps = 8
       var $remainPins = this.$pins.map(function () {
         if ($(this).find('img:eq(0)').attr('data-bootstrap-waterfall-src')) {
           return $(this)
@@ -164,7 +192,7 @@
       return $remainPins.slice(0, steps)
     },
     isWantMore: function () {
-      if ($(window).scrollTop() + $(window).height() > helper.getDocHeight() - 100) {
+      if ($(window).scrollTop() + $(window).height() > helper.getDocHeight() - 177) {
         return true
       } else {
         return false
