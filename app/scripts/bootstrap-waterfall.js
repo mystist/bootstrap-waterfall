@@ -51,6 +51,7 @@
     this.$pins = null
     this.lefts = []
     this.tops = []
+    this.sail = this.sail()
     
     this.init()
   }
@@ -113,7 +114,7 @@
   }
   
   Waterfall.prototype.prepare = function () {
-    $(window).on('scroll', this.sail())
+    $(window).on('scroll', this.sail)
     
     return this
   }
@@ -144,7 +145,7 @@
   }
   
   Waterfall.prototype.hold = function () {
-    $(window).off('scroll')
+    $(window).off('scroll', this.sail)
   }
   
   Waterfall.prototype.render = function ($pins) {
