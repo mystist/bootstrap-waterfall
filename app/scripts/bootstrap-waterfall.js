@@ -11,6 +11,20 @@
   
   // http://underscorejs.org/ (1.7.0)
   var _ = _ || {
+    indexOf: function(array, item, isSorted) {
+      if (array == null) return -1;
+      var i = 0, length = array.length;
+      if (isSorted) {
+        if (typeof isSorted == 'number') {
+          i = isSorted < 0 ? Math.max(0, length + isSorted) : isSorted;
+        } else {
+          i = _.sortedIndex(array, item);
+          return array[i] === item ? i : -1;
+        }
+      }
+      for (; i < length; i++) if (array[i] === item) return i;
+      return -1;
+    },
     now: Date.now || function () {
       return new Date().getTime();
     },
@@ -158,7 +172,7 @@
   }
   
   Waterfall.prototype.placePin = function ($pin) {
-    var minIndex = this.tops.indexOf(helper.m(this.tops).min)
+    var minIndex = _.indexOf(this.tops, Math.min.apply(null, this.tops))
     var position = self.getPositionByIndex.call(this, minIndex)
     
     $pin.css({
@@ -173,7 +187,7 @@
   }
   
   Waterfall.prototype.updateHeight = function () {
-    var maxIndex = this.tops.indexOf(helper.m(this.tops).max)
+    var maxIndex = _.indexOf(this.tops, Math.max.apply(null, this.tops))
     this.$element.height(this.tops[maxIndex])
     
     return this
@@ -243,7 +257,7 @@
     var that = this
     this.timerId = setInterval(function () {
       that.isDone() ? that.stop() : that.check()
-    }, 13)
+    }, 40)
     
     return this
   }
@@ -270,21 +284,17 @@
   }
   
   Pin.prototype.isLoaded = function () {
-    return this.$img[0].height ? true : false
+    var img = this.$img[0]
+    if (img.complete) {
+      return true
+    } else if (img.width || img.height) {
+      return true
+    } else {
+      return false
+    }
   }
   
   var helper = {
-    m: function (arr) {
-      var m = {
-        max: -Infinity,
-        min: Infinity
-      }
-      for (var i = 0, l = arr.length; i < l; i++) {
-        if (arr[i] > m.max) m.max = arr[i]
-        if (arr[i] < m.min) m.min = arr[i]
-      }
-      return m
-    },
     // http://james.padolsey.com/javascript/get-document-height-cross-browser/
     getDocHeight: function () {
       var D = document;
