@@ -65,12 +65,12 @@
     this
       .initPins()
       .calculatePosition()
-      .runCompass()
+      .watchCompass()
       .ship()
   }
   
   Waterfall.prototype.initPins = function () {
-    var $pins = $($('*[type="text/bootstrap-waterfall-template"]').html())
+    var $pins = $(this.$element.data('bootstrap-waterfall-template'))
     $pins.each(function () {
       var $img = $(this).find('img:eq(0)')
       if ($img.length > 0) {
@@ -101,7 +101,7 @@
     return this
   }
   
-  Waterfall.prototype.runCompass = function () {
+  Waterfall.prototype.watchCompass = function () {
     var that = this
     var timerId = setInterval(function () {
       if (that.$element.closest('body').length < 1) { // Check if user had left the page.
