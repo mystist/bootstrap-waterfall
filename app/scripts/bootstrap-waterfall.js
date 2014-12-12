@@ -99,8 +99,10 @@
   }
   
   Waterfall.prototype.calculatePosition = function () {
+    
+    // Use fake element to get per pin's width which should be set in CSS.
     var $fake = this.$pins.first().clone()
-    this.$element.append($fake)
+    this.$element.append($fake.hide())
     
     var width = $fake.outerWidth(true)
     var countsPerRow = parseInt((this.$element.width() / width), 10)
