@@ -56,6 +56,37 @@
         }
         return result;
       };
+    },
+    debounce: function (func, wait, immediate) {
+      var timeout, args, context, timestamp, result;
+
+      var later = function() {
+        var last = _.now() - timestamp;
+
+        if (last < wait && last > 0) {
+          timeout = setTimeout(later, wait - last);
+        } else {
+          timeout = null;
+          if (!immediate) {
+            result = func.apply(context, args);
+            if (!timeout) context = args = null;
+          }
+        }
+      };
+
+      return function() {
+        context = this;
+        args = arguments;
+        timestamp = _.now();
+        var callNow = immediate && !timeout;
+        if (!timeout) timeout = setTimeout(later, wait);
+        if (callNow) {
+          result = func.apply(context, args);
+          context = args = null;
+        }
+
+        return result;
+      };
     }
   }
   
@@ -68,10 +99,13 @@
     this.perPinWidth = null
     this.sail = this.sail()
     
-    this.init()
+    this
+      .init()
+      .compassWatch()
+      .gaugeWatch()
   }
   
-  Waterfall.VERSION = '0.0.1'
+  Waterfall.VERSION = '0.0.0'
   
   Waterfall.DEFAULTS = {
   }
@@ -80,8 +114,9 @@
     this
       .initPins()
       .calculatePosition()
-      .watchCompass()
       .ship()
+      
+    return this
   }
   
   Waterfall.prototype.initPins = function () {
@@ -99,34 +134,25 @@
   }
   
   Waterfall.prototype.calculatePosition = function () {
-    
     // Use fake element to get per pin's width which pre set by user in CSS.
     var $fake = this.$pins.first().clone()
     this.$element.append($fake.css('opacity', 0))
     
     var width = $fake.outerWidth(true)
-    var countsPerRow = parseInt((this.$element.width() / width), 10)
+    var counts = parseInt((this.$element.width() / width), 10)
     
-    for (var i = 0; i < countsPerRow; i++) {
-      this.lefts.push(i * width)
-      this.tops.push(0)
+    var lefts = []
+    var tops = []
+    for (var i = 0; i < counts; i++) {
+      lefts.push(i * width)
+      tops.push(0)
     }
+    this.lefts = lefts
+    this.tops = tops
     
     this.perPinWidth = $fake.find('img:eq(0)').width()
     
     $fake.remove()
-    
-    return this
-  }
-  
-  Waterfall.prototype.watchCompass = function () {
-    var that = this
-    var timerId = setInterval(function () {
-      if (that.$element.closest('body').length < 1) { // Check if user had left the page.
-        clearInterval(timerId)
-        that.destroy()
-      }
-    }, 777)
     
     return this
   }
@@ -141,7 +167,9 @@
     var that = this
     return _.throttle(function () {
       if (self.isWantMore.call(that)) {
-        that.ship()
+        that
+          .hold()
+          .ship()
       }    
     }, 500)
   }
@@ -149,7 +177,6 @@
   Waterfall.prototype.ship = function () {
     var $pins = self.getToLoadPins.call(this)
     var loader = new Loader($pins)
-    this.hold()
     loader
       .load()
       .run()
@@ -163,6 +190,8 @@
   
   Waterfall.prototype.hold = function () {
     $(window).off('scroll', this.sail)
+    
+    return this
   }
   
   Waterfall.prototype.render = function ($pins) {
@@ -176,7 +205,7 @@
   
   Waterfall.prototype.placePin = function ($pin) {
     var minIndex = _.indexOf(this.tops, Math.min.apply(null, this.tops))
-    var position = self.getPositionByIndex.call(this, minIndex)
+    var position = self.getPosition.call(this, minIndex)
     
     $pin.css({
       position: 'absolute',
@@ -184,11 +213,16 @@
       top: position.top
     })
     
-    self.setImageHeightByPin.call(this, $pin)
-    self.showImageByPin.call(this, $pin)
+    // Only we load or reload images we will execute `$pin.data('bootstrap-waterfall-pin', pin)`.
+    if ($pin.data('bootstrap-waterfall-pin')) {
+      self.setImageHeight.call(this, $pin)
+      self.showImage.call(this, $pin)
+      $pin.removeData('bootstrap-waterfall-pin')
+    }
+    
     this.$element.append($pin)
     
-    self.updatePositionByIndexAndPin.call(this, minIndex, $pin)
+    self.updatePosition.call(this, minIndex, $pin)
   }
   
   Waterfall.prototype.updateHeight = function () {
@@ -198,21 +232,55 @@
     return this
   }
   
+  Waterfall.prototype.compassWatch = function () {
+    var that = this
+    var timerId = setInterval(function () {
+      if (that.$element.closest('body').length < 1) { // Check if user had left the page.
+        clearInterval(timerId)
+        that.destroy()
+      }
+    }, 777)
+    
+    return this
+  }
+  
   Waterfall.prototype.destroy = function () {
     this.hold()
     this.$element.remove()
+  }
+  
+  Waterfall.prototype.gaugeWatch = function () {
+    var that = this
+    $(window).on('resize', _.debounce(function () {
+      that
+        .hold()
+        .calculatePosition()
+        .render(self.getLoadedPins.call(that))
+        .updateHeight()
+        .prepare()
+        
+    }, 777))
   }
   
   var self = {
     getToLoadPins: function () {
       var steps = 8
       var $remainPins = this.$pins.map(function () {
-        if ($(this).data('bootstrap-waterfall-src')) {
+        if ($(this).find('img').length > 0 && $(this).data('bootstrap-waterfall-src')) {
           return $(this)
         }
       })
       
       return $remainPins.slice(0, steps)
+    },
+    getLoadedPins: function () {
+      var $loadedPins = this.$pins.map(function () {
+        if ($(this).find('img').length > 0 && !$(this).data('bootstrap-waterfall-src')) {
+          return $(this)
+        }
+      })
+      
+      return $loadedPins
     },
     isWantMore: function () {
       if ($(window).scrollTop() + $(window).height() > helper.getDocHeight() - 177) {
@@ -221,14 +289,14 @@
         return false
       }
     },
-    getPositionByIndex: function (index) {
+    getPosition: function (index) {
       var position = {
         left: this.lefts[index],
         top: this.tops[index]
       }
       return position
     },
-    setImageHeightByPin: function ($pin) {
+    setImageHeight: function ($pin) {
       var pin = $pin.data('bootstrap-waterfall-pin')
       var height = this.perPinWidth * pin.img.height / pin.img.width
       $pin.find('img:eq(0)').css({
@@ -236,11 +304,11 @@
         'width': 'auto'
       })
     },
-    showImageByPin: function ($pin) {
+    showImage: function ($pin) {
       $pin.find('img:eq(0)').attr('src', $pin.data('bootstrap-waterfall-src'))
       $pin.removeData('bootstrap-waterfall-src')
     },
-    updatePositionByIndexAndPin: function (index, $pin) {
+    updatePosition: function (index, $pin) {
       this.tops[index] += $pin.outerHeight(true)
     }
   }
