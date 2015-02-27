@@ -65,6 +65,7 @@
     this.$pins = null
     this.lefts = []
     this.tops = []
+    this.perPinWidth = null
     this.sail = this.sail()
     
     this.init()
@@ -88,9 +89,8 @@
     $pins.each(function () {
       var $img = $(this).find('img:eq(0)')
       if ($img.length > 0) {
-        $img
-          .attr('data-bootstrap-waterfall-src', $img.attr('src'))
-          .attr('src', 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==')
+        $(this).data('bootstrap-waterfall-src', $img.attr('src'))
+        $img.attr('src', 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==')
       }
     })
     this.$pins = $pins
@@ -100,9 +100,9 @@
   
   Waterfall.prototype.calculatePosition = function () {
     
-    // Use fake element to get per pin's width which should be set in CSS.
+    // Use fake element to get per pin's width which pre set by user in CSS.
     var $fake = this.$pins.first().clone()
-    this.$element.append($fake.hide())
+    this.$element.append($fake.css('opacity', 0))
     
     var width = $fake.outerWidth(true)
     var countsPerRow = parseInt((this.$element.width() / width), 10)
@@ -111,6 +111,8 @@
       this.lefts.push(i * width)
       this.tops.push(0)
     }
+    
+    this.perPinWidth = $fake.find('img:eq(0)').width()
     
     $fake.remove()
     
@@ -146,10 +148,9 @@
   
   Waterfall.prototype.ship = function () {
     var $pins = self.getToLoadPins.call(this)
-    var loader = new Loader()
+    var loader = new Loader($pins)
     this.hold()
     loader
-      .init($pins)
       .load()
       .run()
       .deferred.done($.proxy(function () {
@@ -183,6 +184,8 @@
       top: position.top
     })
     
+    self.setImageHeightByPin.call(this, $pin)
+    self.showImageByPin.call(this, $pin)
     this.$element.append($pin)
     
     self.updatePositionByIndexAndPin.call(this, minIndex, $pin)
@@ -204,7 +207,7 @@
     getToLoadPins: function () {
       var steps = 8
       var $remainPins = this.$pins.map(function () {
-        if ($(this).find('img:eq(0)').attr('data-bootstrap-waterfall-src')) {
+        if ($(this).data('bootstrap-waterfall-src')) {
           return $(this)
         }
       })
@@ -225,31 +228,38 @@
       }
       return position
     },
+    setImageHeightByPin: function ($pin) {
+      var pin = $pin.data('bootstrap-waterfall-pin')
+      var height = this.perPinWidth * pin.img.height / pin.img.width
+      $pin.find('img:eq(0)').css({
+        'height': height,
+        'width': 'auto'
+      })
+    },
+    showImageByPin: function ($pin) {
+      $pin.find('img:eq(0)').attr('src', $pin.data('bootstrap-waterfall-src'))
+      $pin.removeData('bootstrap-waterfall-src')
+    },
     updatePositionByIndexAndPin: function (index, $pin) {
       this.tops[index] += $pin.outerHeight(true)
     }
   }
   
-  function Loader() {
+  function Loader($pins) {
+    this.$pins = $pins
     this.tasks = []
     this.timerId = null
     this.deferred = new $.Deferred()
   }
   
-  Loader.prototype.init = function ($pins) {
-    var that = this
-    $pins.each(function () {
-      var pin = new Pin($(this).find('img:eq(0)'))
-      that.tasks.push(pin)
-    })
-    
-    return this
-  }
-  
   Loader.prototype.load = function () {
-    $.each(this.tasks, function (i, pin) {
-      pin.$img[0].src = pin.$img.attr('data-bootstrap-waterfall-src')
-      pin.$img.removeAttr('data-bootstrap-waterfall-src')
+    var that = this
+    this.$pins.each(function () {
+      var img = new Image()
+      img.src = $(this).data('bootstrap-waterfall-src')
+      var pin = new Pin(img)
+      that.tasks.push(pin)
+      $(this).data('bootstrap-waterfall-pin', pin)
     })
     
     return this
@@ -275,21 +285,21 @@
   
   Loader.prototype.check = function () {
     for (var i = 0; i < this.tasks.length; i++) {
-      if (this.tasks[i].isLoaded()) {
+      var pin = this.tasks[i]
+      if (pin.isLoaded()) {
         this.tasks.splice(i--, 1)
       }
     }
   }
   
-  function Pin($img) {
-    this.$img = $img
+  function Pin(img) {
+    this.img = img
+    this.initWidth = img.width
+    this.initHeight = img.height
   }
   
   Pin.prototype.isLoaded = function () {
-    var img = this.$img[0]
-    if (img.complete) {
-      return true
-    } else if (img.width || img.height) {
+    if (this.img.width !== this.initWidth || this.img.height !== this.initHeight || this.img.width * this.img.height > 1024) { // Thanks TangBin.
       return true
     } else {
       return false
