@@ -1,11 +1,14 @@
-bootstrap-waterfall
-===================
+# bootstrap-waterfall
+> Waterfall the world beauty.
 
-#### TODO  
-1. Handle images's width within `col-md-12` and `col-lg-12`. Load more bigger/smaller images when resize.
+## TODO
+ - Support simple use case.
+ - Handle images's width within `col-md-12` and `col-lg-12`. Load more bigger/smaller images when resize.
+ - Prepare gh-pages.
+ - Write test cases.
+ - CI
+ - Explain why named as bootstrap.
 
-2. Update Yeoman generater.
-
-3. Try it on Samwise's site.
-
-4. Prepare gh-pages.
+## DONE
+ - Update Yeoman generater.
+ - Try on [JiaDingWaiMai](https://github.com/Mystist/JiaDingWaiMai).

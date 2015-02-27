@@ -1,29 +1,31 @@
+$icon-font-path: '../bower_components/bootstrap-sass-official/assets/fonts/bootstrap/';
 
-.bootstrap-waterfall {
+// bower:scss
+@import "../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap.scss";
+// endbower
+
+.waterfall {
   position: relative;
   margin-left: -7px;
   margin-right: -7px;
-  
+
   .list-group {
     width: 274px;
     margin: 7px;
-    
+
     > li:first-child {
       padding: 10px 0;
       background-color: white;
-      
+
       img {
         width: 100%;
         border-top-right-radius: 4px;
         border-top-left-radius: 4px;
       }
     }
-    
+
     > li {
       background-color: #f5f5f5;
     }
-    
   }
-
 }
-

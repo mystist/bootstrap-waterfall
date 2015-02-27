@@ -1,14 +1,14 @@
 /*
  * bootstrap-waterfall
- * 
  *
- * Copyright (c) 2014 
+ *
+ * Copyright (c) 2014-2015
  * Licensed under the MIT license.
  */
 
 +function ($) {
   'use strict';
-  
+
   // http://underscorejs.org/ (1.7.0)
   var _ = _ || {
     indexOf: function(array, item, isSorted) {
@@ -89,36 +89,40 @@
       };
     }
   }
-  
+
   var Waterfall = function (element, options) {
     this.$element = $(element)
     this.options = $.extend({}, Waterfall.DEFAULTS, options)
     this.$pins = null
+    this.pinWidth = null
+    this.imgWidth = null
     this.lefts = []
     this.tops = []
-    this.perPinWidth = null
     this.sail = this.sail()
-    
+    this.adjust = this.adjust()
+    this.compassTimerId = null
+
     this
       .init()
+      .ship()
       .compassWatch()
-      .gaugeWatch()
+      .bindResize()
   }
-  
+
   Waterfall.VERSION = '0.0.1'
-  
+
   Waterfall.DEFAULTS = {
   }
-  
+
   Waterfall.prototype.init = function () {
     this
       .initPins()
-      .calculatePosition()
-      .ship()
-      
+      .initAttributes()
+      .initPosition()
+
     return this
   }
-  
+
   Waterfall.prototype.initPins = function () {
     var $pins = $(this.$element.data('bootstrap-waterfall-template'))
     $pins.each(function () {
@@ -129,51 +133,61 @@
       }
     })
     this.$pins = $pins
-    
+
     return this
   }
-  
-  Waterfall.prototype.calculatePosition = function () {
-    // Use fake element to get per pin's width which pre set by user in CSS.
-    var $fake = this.$pins.first().clone()
-    this.$element.append($fake.css('opacity', 0))
-    
-    var width = $fake.outerWidth(true)
-    var counts = parseInt((this.$element.width() / width), 10)
-    
+
+  Waterfall.prototype.initAttributes = function () {
+    // Use fake element to get per pin's width which set by user via CSS.
+    var $fakePin = this.$pins.first().clone()
+    this.$element.append($fakePin.css('opacity', 0))
+
+    this.pinWidth = $fakePin.outerWidth(true)
+    this.imgWidth = $fakePin.find('img:eq(0)').width()
+
+    $fakePin.remove()
+
+    return this
+  }
+
+  Waterfall.prototype.initPosition = function () {
+    var counts = parseInt((this.$element.width() / this.pinWidth), 10)
+
     var lefts = []
     var tops = []
     for (var i = 0; i < counts; i++) {
-      lefts.push(i * width)
+      lefts.push(i * this.pinWidth)
       tops.push(0)
     }
     this.lefts = lefts
     this.tops = tops
-    
-    this.perPinWidth = $fake.find('img:eq(0)').width()
-    
-    $fake.remove()
-    
+
     return this
   }
-  
-  Waterfall.prototype.prepare = function () {
-    $(window).on('scroll', this.sail)
-    
-    return this
-  }
-  
+
   Waterfall.prototype.sail = function () {
     var that = this
     return _.throttle(function () {
       if (self.isWantMore.call(that)) {
         that
-          .hold()
+          .unbindScroll()
           .ship()
-      }    
+      }
     }, 500)
   }
-  
+
+  Waterfall.prototype.bindScroll = function () {
+    $(window).on('scroll', this.sail)
+
+    return this
+  }
+
+  Waterfall.prototype.unbindScroll = function () {
+    $(window).off('scroll', this.sail)
+
+    return this
+  }
+
   Waterfall.prototype.ship = function () {
     var $pins = self.getToLoadPins.call(this)
     var loader = new Loader($pins)
@@ -184,93 +198,113 @@
         this
           .render($pins)
           .updateHeight()
-          .prepare()
+          .bindScroll()
       }, this))
-  }
-  
-  Waterfall.prototype.hold = function () {
-    $(window).off('scroll', this.sail)
-    
+
     return this
   }
-  
+
   Waterfall.prototype.render = function ($pins) {
     var that = this
     $pins.each(function () {
       that.placePin($(this))
     })
-    
+
     return this
   }
-  
+
   Waterfall.prototype.placePin = function ($pin) {
     var minIndex = _.indexOf(this.tops, Math.min.apply(null, this.tops))
     var position = self.getPosition.call(this, minIndex)
-    
+
     $pin.css({
       position: 'absolute',
       left: position.left,
       top: position.top
     })
-    
-    // Only we load or reload images we will execute `$pin.data('bootstrap-waterfall-pin', pin)`.
+
     if ($pin.data('bootstrap-waterfall-pin')) {
       self.setImageHeight.call(this, $pin)
       self.showImage.call(this, $pin)
       $pin.removeData('bootstrap-waterfall-pin')
     }
-    
+
     this.$element.append($pin)
-    
+
     self.updatePosition.call(this, minIndex, $pin)
+
+    return this
   }
-  
+
   Waterfall.prototype.updateHeight = function () {
     var maxIndex = _.indexOf(this.tops, Math.max.apply(null, this.tops))
     this.$element.height(this.tops[maxIndex])
-    
+
     return this
   }
-  
+
   Waterfall.prototype.compassWatch = function () {
     var that = this
-    var timerId = setInterval(function () {
+    this.compassTimerId = setInterval(function () {
       if (that.$element.closest('body').length < 1) { // Check if user had left the page.
-        clearInterval(timerId)
         that.destroy()
       }
     }, 777)
-    
+
     return this
   }
-  
-  Waterfall.prototype.destroy = function () {
-    this.hold()
-    this.$element.remove()
+
+  Waterfall.prototype.compassClose = function () {
+    clearInterval(this.compassTimerId)
+
+    return this
   }
-  
-  Waterfall.prototype.gaugeWatch = function () {
+
+  Waterfall.prototype.adjust = function () {
     var that = this
-    $(window).on('resize', _.debounce(function () {
+    return _.debounce(function () {
       that
-        .hold()
-        .calculatePosition()
+        .unbindScroll()
+        .initPosition()
         .render(self.getLoadedPins.call(that))
         .updateHeight()
-        .prepare()
-        
-    }, 777))
+        .bindScroll()
+    }, 777)
   }
-  
+
+  Waterfall.prototype.bindResize = function () {
+    $(window).on('resize', this.adjust)
+
+    return this
+  }
+
+  Waterfall.prototype.unbindResize = function () {
+    $(window).off('resize', this.adjust)
+
+    return this
+  }
+
+  Waterfall.prototype.destroy = function () {
+    this
+      .unbindScroll()
+      .unbindResize()
+      .compassClose()
+      .$element.remove()
+
+    return this
+  }
+
   var self = {
     getToLoadPins: function () {
-      var steps = 8
+      var counts = parseInt((this.$element.width() / this.pinWidth), 10)
+      var steps = counts * 2
+
       var $remainPins = this.$pins.map(function () {
         if ($(this).find('img').length > 0 && $(this).data('bootstrap-waterfall-src')) {
           return $(this)
         }
       })
-      
+
       return $remainPins.slice(0, steps)
     },
     getLoadedPins: function () {
@@ -279,7 +313,7 @@
           return $(this)
         }
       })
-      
+
       return $loadedPins
     },
     isWantMore: function () {
@@ -298,7 +332,7 @@
     },
     setImageHeight: function ($pin) {
       var pin = $pin.data('bootstrap-waterfall-pin')
-      var height = this.perPinWidth * pin.img.height / pin.img.width
+      var height = this.imgWidth * pin.img.height / pin.img.width
       $pin.find('img:eq(0)').css({
         'height': height,
         'width': 'auto'
@@ -312,14 +346,14 @@
       this.tops[index] += $pin.outerHeight(true)
     }
   }
-  
+
   function Loader($pins) {
     this.$pins = $pins
     this.tasks = []
     this.timerId = null
     this.deferred = new $.Deferred()
   }
-  
+
   Loader.prototype.load = function () {
     var that = this
     this.$pins.each(function () {
@@ -329,28 +363,28 @@
       that.tasks.push(pin)
       $(this).data('bootstrap-waterfall-pin', pin)
     })
-    
+
     return this
   }
-  
+
   Loader.prototype.run = function () {
     var that = this
     this.timerId = setInterval(function () {
       that.isDone() ? that.stop() : that.check()
     }, 40)
-    
+
     return this
   }
-  
+
   Loader.prototype.isDone = function () {
     return this.tasks.length === 0 ? true : false
   }
-  
+
   Loader.prototype.stop = function () {
     clearInterval(this.timerId)
     this.deferred.resolve()
   }
-  
+
   Loader.prototype.check = function () {
     for (var i = 0; i < this.tasks.length; i++) {
       var pin = this.tasks[i]
@@ -359,21 +393,21 @@
       }
     }
   }
-  
+
   function Pin(img) {
     this.img = img
-    this.initWidth = img.width
-    this.initHeight = img.height
+    this.initialWidth = img.width
+    this.initialHeight = img.height
   }
-  
+
   Pin.prototype.isLoaded = function () {
-    if (this.img.width !== this.initWidth || this.img.height !== this.initHeight || this.img.width * this.img.height > 1024) { // Thanks TangBin.
+    if (this.img.width !== this.initialWidth || this.img.height !== this.initialHeight || this.img.width * this.img.height > 1024) { // Thanks TangBin.
       return true
     } else {
       return false
     }
   }
-  
+
   var helper = {
     // http://james.padolsey.com/javascript/get-document-height-cross-browser/
     getDocHeight: function () {
@@ -385,22 +419,22 @@
       );
     }
   }
-  
+
   function Plugin(option) {
     return this.each(function () {
       var $this = $(this)
       var data = $this.data('mystist.waterfall')
       var options = typeof option == 'object' && option
-      
+
       if (!data) $this.data('mystist.waterfall', (data = new Waterfall(this, options)))
     })
   }
-  
+
   var old = $.fn.waterfall
-  
+
   $.fn.waterfall = Plugin
   $.fn.waterfall.Constructor = Waterfall
-  
+
   $.fn.waterfall.noConflict = function () {
     $.fn.waterfall = old
     return this
