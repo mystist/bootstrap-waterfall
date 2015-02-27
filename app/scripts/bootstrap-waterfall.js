@@ -105,7 +105,7 @@
       .gaugeWatch()
   }
   
-  Waterfall.VERSION = '0.0.0'
+  Waterfall.VERSION = '0.0.1'
   
   Waterfall.DEFAULTS = {
   }
