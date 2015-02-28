@@ -1,38 +1,43 @@
-/* jshint node:true */
+/*global -$ */
 'use strict';
-// generated on 2015-02-10 using generator-gulp-webapp 0.2.0
+// generated on 2015-02-28 using generator-gulp-webapp 0.3.0
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
+var browserSync = require('browser-sync');
+var reload = browserSync.reload;
 
 gulp.task('styles', function () {
   return gulp.src('src/styles/main.scss')
-    .pipe($.plumber())
-    .pipe($.rubySass({
-      style: 'expanded',
-      precision: 10
+    .pipe($.sourcemaps.init())
+    .pipe($.sass({
+      outputStyle: 'nested', // libsass doesn't support expanded yet
+      precision: 10,
+      includePaths: ['.'],
+      onError: console.error.bind(console, 'Sass error:')
     }))
-    .pipe($.autoprefixer({browsers: ['last 1 version']}))
-    .pipe(gulp.dest('.tmp/styles'));
+    .pipe($.postcss([
+      require('autoprefixer-core')({browsers: ['last 1 version']})
+    ]))
+    .pipe($.sourcemaps.write())
+    .pipe(gulp.dest('.tmp/styles'))
+    .pipe(reload({stream: true}));
 });
 
 gulp.task('jshint', function () {
   return gulp.src('src/**/*.js')
+    .pipe(reload({stream: true, once: true}))
     .pipe($.jshint())
     .pipe($.jshint.reporter('jshint-stylish'))
-    .pipe($.jshint.reporter('fail'));
+    .pipe($.if(!browserSync.active, $.jshint.reporter('fail')));
 });
 
 gulp.task('html', ['styles'], function () {
-  var lazypipe = require('lazypipe');
-  var cssChannel = lazypipe()
-    .pipe($.csso)
-    .pipe($.replace, 'bower_components/bootstrap-sass-official/assets/fonts/bootstrap','fonts');
-  var assets = $.useref.assets({searchPath: '{.tmp,src}'});
+  var assets = $.useref.assets({searchPath: ['.tmp', 'src', '.']});
 
   return gulp.src('src/*.html')
     .pipe(assets)
     .pipe($.if('*.js', $.uglify()))
-    .pipe($.if('*.css', cssChannel()))
+    .pipe($.if('*.css', $.csso()))
     .pipe(assets.restore())
     .pipe($.useref())
     .pipe($.if('*.html', $.minifyHtml({conditionals: true, loose: true})))
@@ -43,23 +48,26 @@ gulp.task('images', function () {
   return gulp.src('src/images/**/*')
     .pipe($.cache($.imagemin({
       progressive: true,
-      interlaced: true
+      interlaced: true,
+      // don't remove IDs from SVGs, they are often used
+      // as hooks for embedding and styling
+      svgoPlugins: [{cleanupIDs: false}]
     })))
     .pipe(gulp.dest('dist/images'));
 });
 
 gulp.task('fonts', function () {
-  return gulp.src(require('main-bower-files')().concat('src/fonts/**/*'))
-    .pipe($.filter('**/*.{eot,svg,ttf,woff}'))
-    .pipe($.flatten())
+  return gulp.src(require('main-bower-files')({
+    filter: '**/*.{eot,svg,ttf,woff,woff2}'
+  }).concat('src/fonts/**/*'))
+    .pipe(gulp.dest('.tmp/fonts'))
     .pipe(gulp.dest('dist/fonts'));
 });
 
 gulp.task('extras', function () {
   return gulp.src([
     'src/*.*',
-    '!src/*.html',
-    'node_modules/apache-server-configs/dist/.htaccess'
+    '!src/*.html'
   ], {
     dot: true
   }).pipe(gulp.dest('dist'));
@@ -67,27 +75,29 @@ gulp.task('extras', function () {
 
 gulp.task('clean', require('del').bind(null, ['.tmp', 'dist']));
 
-gulp.task('connect', ['styles'], function () {
-  var serveStatic = require('serve-static');
-  var serveIndex = require('serve-index');
-  var app = require('connect')()
-    .use(require('connect-livereload')({port: 35729}))
-    .use(serveStatic('.tmp'))
-    .use(serveStatic('src'))
-    // paths to bower_components should be relative to the current file
-    // e.g. in app/index.html you should use ../bower_components
-    .use('/bower_components', serveStatic('bower_components'))
-    .use(serveIndex('src'));
+gulp.task('serve', ['styles', 'fonts'], function () {
+  browserSync({
+    notify: false,
+    port: 9000,
+    server: {
+      baseDir: ['.tmp', 'src'],
+      routes: {
+        '/bower_components': 'bower_components'
+      }
+    }
+  });
 
-  require('http').createServer(app)
-    .listen(9000)
-    .on('listening', function () {
-      console.log('Started connect web server on http://localhost:9000');
-    });
-});
+  // watch for changes
+  gulp.watch([
+    'src/*.html',
+    'src/**/*.js',
+    'src/images/**/*',
+    '.tmp/fonts/**/*'
+  ]).on('change', reload);
 
-gulp.task('serve', ['connect', 'watch'], function () {
-  require('opn')('http://localhost:9000');
+  gulp.watch('src/styles/**/*.scss', ['styles']);
+  gulp.watch('src/fonts/**/*', ['fonts']);
+  gulp.watch('bower.json', ['wiredep', 'fonts']);
 });
 
 // inject bower components
@@ -95,27 +105,17 @@ gulp.task('wiredep', function () {
   var wiredep = require('wiredep').stream;
 
   gulp.src('src/styles/*.scss')
-    .pipe(wiredep())
+    .pipe(wiredep({
+      ignorePath: /^(\.\.\/)+/
+    }))
     .pipe(gulp.dest('src/styles'));
 
   gulp.src('src/*.html')
-    .pipe(wiredep({exclude: ['bootstrap-sass-official']}))
+    .pipe(wiredep({
+      exclude: ['bootstrap-sass-official'],
+      ignorePath: /^(\.\.\/)*\.\./
+    }))
     .pipe(gulp.dest('src'));
-});
-
-gulp.task('watch', ['connect'], function () {
-  $.livereload.listen();
-
-  // watch for changes
-  gulp.watch([
-    'src/*.html',
-    '.tmp/styles/**/*.css',
-    'src/**/*.js',
-    'src/images/**/*'
-  ]).on('change', $.livereload.changed);
-
-  gulp.watch('src/styles/**/*.scss', ['styles']);
-  gulp.watch('bower.json', ['wiredep']);
 });
 
 gulp.task('build', ['jshint', 'html', 'images', 'fonts', 'extras'], function () {
