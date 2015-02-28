@@ -93,6 +93,7 @@
   var Waterfall = function (element, options) {
     this.$element = $(element)
     this.options = $.extend({}, Waterfall.DEFAULTS, options)
+    this.$container = null
     this.$pins = null
     this.pinWidth = null
     this.imgWidth = null
@@ -117,6 +118,7 @@
   Waterfall.prototype.init = function () {
     this
       .initPins()
+      .initContainer()
       .initAttributes()
       .initPosition()
 
@@ -138,10 +140,17 @@
     return this
   }
 
+  Waterfall.prototype.initContainer = function () {
+    this.$container = $('<div />').css('position', 'relative')
+    this.$element.html(this.$container)
+
+    return this
+  }
+
   Waterfall.prototype.initAttributes = function () {
     // Use fake element to get per pin's width which set by user via CSS.
     var $fakePin = this.$pins.first().clone()
-    this.$element.append($fakePin.css('opacity', 0))
+    this.$container.append($fakePin.css('opacity', 0))
 
     this.pinWidth = $fakePin.outerWidth(true)
     this.imgWidth = $fakePin.find('img:eq(0)').width()
@@ -152,7 +161,7 @@
   }
 
   Waterfall.prototype.initPosition = function () {
-    var counts = parseInt((this.$element.width() / this.pinWidth), 10)
+    var counts = parseInt((this.$container.width() / this.pinWidth), 10)
 
     var lefts = []
     var tops = []
@@ -236,7 +245,7 @@
       $pin.removeData('bootstrap-waterfall-pin')
     }
 
-    this.$element.append($pin)
+    this.$container.append($pin)
 
     self.updatePosition.call(this, minIndex, $pin)
 
@@ -245,7 +254,7 @@
 
   Waterfall.prototype.updateHeight = function () {
     var maxIndex = _.indexOf(this.tops, Math.max.apply(null, this.tops))
-    this.$element.height(this.tops[maxIndex])
+    this.$container.height(this.tops[maxIndex])
 
     return this
   }
@@ -272,6 +281,7 @@
     return _.debounce(function () {
       that
         .unbindScroll()
+        .initAttributes()
         .initPosition()
         .render(self.getLoadedPins.call(that))
         .updateHeight()
@@ -303,7 +313,7 @@
 
   var self = {
     getToLoadPins: function () {
-      var counts = parseInt((this.$element.width() / this.pinWidth), 10)
+      var counts = parseInt((this.$container.width() / this.pinWidth), 10)
       var steps = counts * 3
 
       var $remainPins = this.$pins.map(function () {
