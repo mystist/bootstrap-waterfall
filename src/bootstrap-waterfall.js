@@ -110,7 +110,7 @@
       .bindResize()
   }
 
-  Waterfall.VERSION = '0.1.5'
+  Waterfall.VERSION = '0.1.6'
 
   Waterfall.DEFAULTS = {
   }
