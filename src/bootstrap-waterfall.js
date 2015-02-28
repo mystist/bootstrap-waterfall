@@ -98,13 +98,13 @@
     this.imgWidth = null
     this.lefts = []
     this.tops = []
-    this.sail = this.sail()
-    this.adjust = this.adjust()
+    this.scrollCallback = this.scrollCallback()
+    this.resizeCallback = this.resizeCallback()
     this.compassTimerId = null
 
     this
       .init()
-      .ship()
+      .sail()
       .compassWatch()
       .bindResize()
   }
@@ -124,7 +124,8 @@
   }
 
   Waterfall.prototype.initPins = function () {
-    var $pins = $(this.$element.data('bootstrap-waterfall-template'))
+    var $pins = this.$element.children().length > 0 ? this.$element.children().remove() : $(this.$element.data('bootstrap-waterfall-template'))
+
     $pins.each(function () {
       var $img = $(this).find('img:eq(0)')
       if ($img.length > 0) {
@@ -165,41 +166,47 @@
     return this
   }
 
-  Waterfall.prototype.sail = function () {
+  Waterfall.prototype.scrollCallback = function () {
     var that = this
     return _.throttle(function () {
       if (self.isWantMore.call(that)) {
         that
           .unbindScroll()
-          .ship()
+          .sail()
       }
     }, 500)
   }
 
   Waterfall.prototype.bindScroll = function () {
-    $(window).on('scroll', this.sail)
+    $(window).on('scroll', this.scrollCallback)
 
     return this
   }
 
   Waterfall.prototype.unbindScroll = function () {
-    $(window).off('scroll', this.sail)
+    $(window).off('scroll', this.scrollCallback)
 
     return this
   }
 
-  Waterfall.prototype.ship = function () {
+  Waterfall.prototype.sail = function () {
     var $pins = self.getToLoadPins.call(this)
     var loader = new Loader($pins)
     loader
       .load()
       .run()
       .deferred.done($.proxy(function () {
-        this
-          .render($pins)
-          .updateHeight()
-          .bindScroll()
+        this.ship($pins)
       }, this))
+
+    return this
+  }
+
+  Waterfall.prototype.ship = function ($pins) {
+    this
+      .render($pins)
+      .updateHeight()
+      .bindScroll()
 
     return this
   }
@@ -223,9 +230,9 @@
       top: position.top
     })
 
-    if ($pin.data('bootstrap-waterfall-pin')) {
+    if ($pin.data('bootstrap-waterfall-pin')) { // Will be true when the image is loaded or reloaded.
       self.setImageHeight.call(this, $pin)
-      self.showImage.call(this, $pin)
+      self.makeImageAvailable.call(this, $pin)
       $pin.removeData('bootstrap-waterfall-pin')
     }
 
@@ -260,7 +267,7 @@
     return this
   }
 
-  Waterfall.prototype.adjust = function () {
+  Waterfall.prototype.resizeCallback = function () {
     var that = this
     return _.debounce(function () {
       that
@@ -273,13 +280,13 @@
   }
 
   Waterfall.prototype.bindResize = function () {
-    $(window).on('resize', this.adjust)
+    $(window).on('resize', this.resizeCallback)
 
     return this
   }
 
   Waterfall.prototype.unbindResize = function () {
-    $(window).off('resize', this.adjust)
+    $(window).off('resize', this.resizeCallback)
 
     return this
   }
@@ -297,7 +304,7 @@
   var self = {
     getToLoadPins: function () {
       var counts = parseInt((this.$element.width() / this.pinWidth), 10)
-      var steps = counts * 2
+      var steps = counts * 3
 
       var $remainPins = this.$pins.map(function () {
         if ($(this).find('img').length > 0 && $(this).data('bootstrap-waterfall-src')) {
@@ -317,7 +324,7 @@
       return $loadedPins
     },
     isWantMore: function () {
-      if ($(window).scrollTop() + $(window).height() > helper.getDocHeight() - 177) {
+      if ($(window).scrollTop() + $(window).height() > helper.getDocHeight() - 377) {
         return true
       } else {
         return false
@@ -338,9 +345,11 @@
         'width': 'auto'
       })
     },
-    showImage: function ($pin) {
-      $pin.find('img:eq(0)').attr('src', $pin.data('bootstrap-waterfall-src'))
-      $pin.removeData('bootstrap-waterfall-src')
+    makeImageAvailable: function ($pin) {
+      if ($pin.data('bootstrap-waterfall-src')) {
+        $pin.find('img:eq(0)').attr('src', $pin.data('bootstrap-waterfall-src'))
+        $pin.removeData('bootstrap-waterfall-src')
+      }
     },
     updatePosition: function (index, $pin) {
       this.tops[index] += $pin.outerHeight(true)
