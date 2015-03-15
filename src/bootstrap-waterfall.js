@@ -113,7 +113,7 @@
       .compassWatch()
   }
 
-  Waterfall.VERSION = '0.1.6'
+  Waterfall.VERSION = '0.2.0'
 
   Waterfall.DEFAULTS = {
   }
