@@ -93,6 +93,7 @@
   var Waterfall = function (element, options) {
     this.$element = $(element)
     this.options = $.extend({}, Waterfall.DEFAULTS, options)
+    this.$fakePin = null
     this.$container = null
     this.$pins = null
     this.pinWidth = null
@@ -105,9 +106,11 @@
 
     this
       .init()
+      .calculateWidth()
+      .calculatePosition()
       .sail()
-      .compassWatch()
       .bindResize()
+      .compassWatch()
   }
 
   Waterfall.VERSION = '0.1.6'
@@ -118,9 +121,7 @@
   Waterfall.prototype.init = function () {
     this
       .initPins()
-      .initContainer()
       .initAttributes()
-      .initPosition()
 
     return this
   }
@@ -140,27 +141,29 @@
     return this
   }
 
-  Waterfall.prototype.initContainer = function () {
+  Waterfall.prototype.initAttributes = function () {
+    // Use fake pin to calculate per pin's width which set by user via CSS.
+    this.$fakePin = this.$pins.first().clone()
+
     this.$container = $('<div />').css('position', 'relative')
     this.$element.html(this.$container)
 
     return this
   }
 
-  Waterfall.prototype.initAttributes = function () {
-    // Use fake element to get per pin's width which set by user via CSS.
-    var $fakePin = this.$pins.first().clone()
-    this.$container.append($fakePin.css('opacity', 0))
+  Waterfall.prototype.calculateWidth = function () {
+    var $clone = this.$fakePin.clone()
+    this.$container.append($clone.css('opacity', 0))
 
-    this.pinWidth = $fakePin.outerWidth(true)
-    this.imgWidth = $fakePin.find('img:eq(0)').width()
+    this.pinWidth = $clone.outerWidth(true)
+    this.imgWidth = $clone.find('img:eq(0)').width()
 
-    $fakePin.remove()
+    $clone.remove()
 
     return this
   }
 
-  Waterfall.prototype.initPosition = function () {
+  Waterfall.prototype.calculatePosition = function () {
     var counts = parseInt((this.$container.width() / this.pinWidth), 10)
 
     var lefts = []
@@ -226,10 +229,12 @@
       top: position.top
     })
 
-    if ($pin.data('bootstrap-waterfall-pin')) { // Will be true when the image is loaded or reloaded.
+    if ($pin.data('bootstrap-waterfall-pin')) {
       self.setImageHeight.call(this, $pin)
+    }
+    if ($pin.data('bootstrap-waterfall-src')) {
       self.makeImageAvailable.call(this, $pin)
-      $pin.removeData('bootstrap-waterfall-pin')
+      $pin.removeData('bootstrap-waterfall-src')
     }
 
     this.$container.append($pin)
@@ -246,6 +251,16 @@
     return this
   }
 
+  Waterfall.prototype.resizeCallback = function () {
+    return _.debounce($.proxy(function () {
+      this
+        .unbindScroll()
+        .calculateWidth()
+        .calculatePosition()
+        .ship(self.getLoadedPins.call(this))
+    }, this), 777)
+  }
+
   Waterfall.prototype.compassWatch = function () {
     this.compassTimerId = setInterval($.proxy(function () {
       if (this.$element.closest('body').length < 1) { // Check if user had left the page.
@@ -256,24 +271,14 @@
     return this
   }
 
-  Waterfall.prototype.resizeCallback = function () {
-    return _.debounce($.proxy(function () {
-      this
-        .unbindScroll()
-        .initAttributes()
-        .initPosition()
-        .render(self.getLoadedPins.call(this))
-        .updateHeight()
-        .bindScroll()
-    }, this), 777)
-  }
-
   Waterfall.prototype.destroy = function () {
     this
       .unbindScroll()
       .unbindResize()
       .compassUnwatch()
-      .$element.remove()
+      .$element
+        .empty()
+        .removeData('mystist.waterfall')
 
     return this
   }
@@ -354,10 +359,7 @@
       })
     },
     makeImageAvailable: function ($pin) {
-      if ($pin.data('bootstrap-waterfall-src')) {
-        $pin.find('img:eq(0)').attr('src', $pin.data('bootstrap-waterfall-src'))
-        $pin.removeData('bootstrap-waterfall-src')
-      }
+      $pin.find('img:eq(0)').attr('src', $pin.data('bootstrap-waterfall-src'))
     },
     updatePosition: function (index, $pin) {
       this.tops[index] += $pin.outerHeight(true)
