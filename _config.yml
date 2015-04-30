@@ -1,7 +1,8 @@
 # Site settings
 title: Bootstrap-waterfall
 email: gjl87910lq@gmail.com
-baseurl: ""
+baseurl: "/bootstrap-waterfall" # the subpath of your site, e.g. /blog/
+url: "https://mystist.github.io" # the base hostname & protocol for your site
 
 # Build settings
 markdown: kramdown
