@@ -1,9 +1,9 @@
 # Contributing to Bootstrap-waterfall
-The codes here is very simple, enjoy your contributing, happy coding!
+Bootstrap-waterfall is fairly simple, enjoy your contributing, happy coding!
 
 
 ## Keep it simple
-**Simple** is the only one thing to keep in mind.
+**Simple** is the only thing to keep in mind.
 
 ## Git Commit Messages
 * Commit message will be used as release notes directly.  
@@ -27,8 +27,8 @@ The codes here is very simple, enjoy your contributing, happy coding!
     * :shirt: `:shirt:` when removing linter warnings
   
   *(or)*
-    * :beers: `:beers:` when bumping versions
-    * :+1: `:+1:` when improving the quality of the code
+    * :beers: `:beers:` when bumping versions or whenever you want beers!
+    * :tada: `:tada:` when none of those above you want to use
 
 ## Todo
 * Prepare gh-pages.
