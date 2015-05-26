@@ -6,13 +6,15 @@ layout: default
   <h1>Bootstrap-waterfall</h1>
   <p class="lead">Waterfall the world beauty.</p>
   <p>
-    <a class="btn btn-lg btn-success" href="#">Getting Started</a>
+    <a class="btn btn-lg btn-success" href="{{ "/getting-started" | prepend: site.baseurl }}">Getting Started</a>
     <a class="btn btn-lg btn-default" href="https://github.com/Mystist/bootstrap-waterfall/releases">Download</a>
   </p>
 </div>
 
-<div class="row marketing">
+<div class="row">
   <div class="col-lg-12">
-    {{ content }}
+    <div class="marketing">
+      {{ content }}
+    </div>
   </div>
 </div>

@@ -1,0 +1,105 @@
+---
+layout: default
+title: Getting Started
+permalink: /getting-started/
+---
+
+## Getting Started
+
+Download the [production version][min] or the [development version][max].
+
+[min]: https://raw.githubusercontent.com/Mystist/bootstrap-waterfall/master/dist/bootstrap-waterfall.js
+[max]: https://raw.githubusercontent.com/Mystist/bootstrap-waterfall/master/src/bootstrap-waterfall.js
+
+In your web page:
+
+```html
+<body>
+
+  <div id="waterfall-container">
+    <!- Should have markups of the list of pins here ->
+  </div>
+
+  <script src="jquery.js"></script>
+  <script src="bootstrap-waterfall.js"></script>
+  <script>
+    $(document).ready(function () {
+      $('#waterfall-container').waterfall();
+    });
+  </script>
+
+</body>
+```
+
+That's it!
+
+Those markups within the `waterfall-container` should be a repeated list:  
+
+```html
+<ul><img src="" /></ul>
+<ul><img src="" /></ul>
+<ul><img src="" /></ul>
+
+or
+
+<div><img src="" /></div>
+<div><img src="" /></div>
+<div><img src="" /></div>
+```
+
+For instance:  
+
+```html
+<ul class="list-group">
+  <li class="list-group-item">
+    <a href="javascript:;">
+      <img src="images/1.jpg" />
+    </a>
+  </li>
+</ul>
+<ul class="list-group">
+  <li class="list-group-item">
+    <a href="javascript:;">
+      <img src="images/2.jpg" />
+    </a>
+  </li>
+</ul>
+<ul class="list-group">
+  <li class="list-group-item">
+    <a href="javascript:;">
+      <img src="images/3.jpg" />
+    </a>
+  </li>
+</ul>
+```
+
+Of cause, you will need to add some styles for the markups at first. I guess you've already done that!
+
+***
+
+## Q&A:  
+- #### Those markups will load before the plugin runs, so do we need to pre set the width and height for images? or the plugin will wait for all the images loaded?  
+  No need. The plugin will cancel all the image request at first. Then send new asynchronous request to load a few images which list in the front. Then repeat this process when we scrolled down near the bottom.
+
+- #### But I don't want to show those markups in the beginning. I just want to show them when it's ready.  
+  There are options, we can put those markups in a `script` tag with a special type, so the browser will ignore it:
+    
+    ```html
+    <script id="waterfall-template" type="text/template">
+      <ul><img src="" /></ul>
+      <ul><img src="" /></ul>
+      <ul><img src="" /></ul>
+    </script>
+    ```
+    
+    To use it, we need to save it to the container's data object:  
+  
+    ```javascript
+    $('#waterfall-container').data('bootstrap-waterfall-template', $('#waterfall-template').html())
+    ```
+    
+    Then, we will have it:
+  
+    ```javascript
+    $('#waterfall-container').waterfall();
+    ```

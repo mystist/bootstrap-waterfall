@@ -91,3 +91,7 @@ body {
     border-bottom: 0;
   }
 }
+
+// Import partials from `sass_dir` (defaults to `_sass`)
+@import "syntax-highlighting";
+

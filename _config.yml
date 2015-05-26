@@ -5,4 +5,7 @@ baseurl: "/bootstrap-waterfall" # the subpath of your site, e.g. /blog/
 url: "https://mystist.github.io" # the base hostname & protocol for your site
 
 # Build settings
-markdown: kramdown
+markdown: redcarpet
+exclude:
+  - node_modules
+  - bower_components

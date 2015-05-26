@@ -1,8 +1,8 @@
 <div class="header">
   <ul class="nav nav-pills pull-right">
-    <li class="active"><a href="/">Home</a></li>
-    <li><a href="#">Getting Started</a></li>
-    <li><a href="#">Live Demo</a></li>
+    <li {% if page.title == 'Bootstrap-waterfall' %} class="active" {% endif %}><a href="{{ "/" | prepend: site.baseurl }}">Home</a></li>
+    <li {% if page.title == 'Getting Started' %} class="active" {% endif %}><a href="{{ "/getting-started" | prepend: site.baseurl }}">Getting Started</a></li>
+    <li {% if page.title == 'Live Demo' %} class="active" {% endif %}><a href="{{ "/live-demo" | prepend: site.baseurl }}">Live Demo</a></li>
     <li><a href="https://github.com/Mystist/bootstrap-waterfall">Github</a></li>
   </ul>
   <h3 class="text-muted">Bootstrap-waterfall</h3>
