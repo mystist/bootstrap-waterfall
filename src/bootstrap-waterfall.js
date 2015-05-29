@@ -9,22 +9,8 @@
 +function ($) {
   'use strict';
 
-  // http://underscorejs.org/ (1.7.0)
+  // http://underscorejs.org/ (1.8.3)
   var _ = _ || {
-    indexOf: function(array, item, isSorted) {
-      if (array == null) return -1;
-      var i = 0, length = array.length;
-      if (isSorted) {
-        if (typeof isSorted == 'number') {
-          i = isSorted < 0 ? Math.max(0, length + isSorted) : isSorted;
-        } else {
-          i = _.sortedIndex(array, item);
-          return array[i] === item ? i : -1;
-        }
-      }
-      for (; i < length; i++) if (array[i] === item) return i;
-      return -1;
-    },
     now: Date.now || function () {
       return new Date().getTime();
     },
@@ -46,8 +32,10 @@
         context = this;
         args = arguments;
         if (remaining <= 0 || remaining > wait) {
-          clearTimeout(timeout);
-          timeout = null;
+          if (timeout) {
+            clearTimeout(timeout);
+            timeout = null;
+          }
           previous = now;
           result = func.apply(context, args);
           if (!timeout) context = args = null;
@@ -63,7 +51,7 @@
       var later = function() {
         var last = _.now() - timestamp;
 
-        if (last < wait && last > 0) {
+        if (last < wait && last >= 0) {
           timeout = setTimeout(later, wait - last);
         } else {
           timeout = null;
@@ -220,7 +208,7 @@
   }
 
   Waterfall.prototype.placePin = function ($pin) {
-    var minIndex = _.indexOf(this.tops, Math.min.apply(null, this.tops))
+    var minIndex = helper.indexOf(this.tops, Math.min.apply(null, this.tops))
     var position = self.getPosition.call(this, minIndex)
 
     $pin.css({
@@ -245,7 +233,7 @@
   }
 
   Waterfall.prototype.updateHeight = function () {
-    var maxIndex = _.indexOf(this.tops, Math.max.apply(null, this.tops))
+    var maxIndex = helper.indexOf(this.tops, Math.max.apply(null, this.tops))
     this.$container.height(this.tops[maxIndex])
 
     return this
@@ -436,6 +424,13 @@
         D.body.offsetHeight, D.documentElement.offsetHeight,
         D.body.clientHeight, D.documentElement.clientHeight
       );
+    },
+    // http://underscorejs.org/ (1.7.0), modified.
+    indexOf: function(array, item) {
+      if (array == null) return -1;
+      var i = 0, length = array.length;
+      for (; i < length; i++) if (array[i] === item) return i;
+      return -1;
     }
   }
 
