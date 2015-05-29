@@ -81,6 +81,7 @@
   var Waterfall = function (element, options) {
     this.$element = $(element)
     this.options = $.extend({}, Waterfall.DEFAULTS, options)
+    this.id = Math.random().toString().slice(2)
     this.$fakePin = null
     this.$container = null
     this.$pins = null
@@ -88,15 +89,12 @@
     this.imgWidth = null
     this.lefts = []
     this.tops = []
-    this.id = Math.random().toString().slice(2)
-    this.compassTimerId = null
 
     this
       .init()
       .calculateWidth()
       .calculatePosition()
       .sail()
-      .compassWatch()
 
     $(window).on('resize.mystist.waterfall' + this.id, _.debounce($.proxy(function () {
       $(window).off('scroll.mystist.waterfall' + this.id)
@@ -241,31 +239,12 @@
     return this
   }
 
-  Waterfall.prototype.compassWatch = function () {
-    this.compassTimerId = setInterval($.proxy(function () {
-      if (this.$element.closest('body').length < 1) { // Check if user had left the page.
-        this.destroy()
-      }
-    }, this), 777)
-
-    return this
-  }
-
   Waterfall.prototype.destroy = function () {
     $(window).off('scroll.mystist.waterfall' + this.id)
     $(window).off('resize.mystist.waterfall' + this.id)
-    this
-      .compassUnwatch()
-      .$element
-        .empty()
-        .removeData('mystist.waterfall')
-
-    return this
-  }
-
-  Waterfall.prototype.compassUnwatch = function () {
-    clearInterval(this.compassTimerId)
-    this.compassTimerId = null
+    this.$element
+      .empty()
+      .removeData('mystist.waterfall')
 
     return this
   }
@@ -408,6 +387,7 @@
       var data = $this.data('mystist.waterfall')
       var options = typeof option == 'object' && option
 
+      if (data && typeof option != 'string') data.destroy() && (data = null)
       if (!data) $this.data('mystist.waterfall', (data = new Waterfall(this, options)))
       if (typeof option == 'string') data[option]()
     })
