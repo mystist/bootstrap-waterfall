@@ -88,8 +88,7 @@
     this.imgWidth = null
     this.lefts = []
     this.tops = []
-    this.scrollCallback = this.scrollCallback()
-    this.resizeCallback = this.resizeCallback()
+    this.id = Math.random().toString().slice(2)
     this.compassTimerId = null
 
     this
@@ -97,8 +96,15 @@
       .calculateWidth()
       .calculatePosition()
       .sail()
-      .bindResize()
       .compassWatch()
+
+    $(window).on('resize.mystist.waterfall' + this.id, _.debounce($.proxy(function () {
+      $(window).off('scroll.mystist.waterfall' + this.id)
+      this
+        .calculateWidth()
+        .calculatePosition()
+        .ship(self.getLoadedPins.call(this))
+    }, this), 777))
   }
 
   Waterfall.VERSION = '0.2.0'
@@ -166,16 +172,6 @@
     return this
   }
 
-  Waterfall.prototype.scrollCallback = function () {
-    return _.throttle($.proxy(function () {
-      if (self.isWantMore.call(this)) {
-        this
-          .unbindScroll()
-          .sail()
-      }
-    }, this), 500)
-  }
-
   Waterfall.prototype.sail = function () {
     var $pins = self.getToLoadPins.call(this)
     var loader = new Loader($pins)
@@ -193,7 +189,13 @@
     this
       .render($pins)
       .updateHeight()
-      .bindScroll()
+
+    $(window).on('scroll.mystist.waterfall' + this.id, _.throttle($.proxy(function () {
+      if (self.isWantMore.call(this)) {
+        $(window).off('scroll.mystist.waterfall' + this.id)
+        this.sail()
+      }
+    }, this), 500))
 
     return this
   }
@@ -239,16 +241,6 @@
     return this
   }
 
-  Waterfall.prototype.resizeCallback = function () {
-    return _.debounce($.proxy(function () {
-      this
-        .unbindScroll()
-        .calculateWidth()
-        .calculatePosition()
-        .ship(self.getLoadedPins.call(this))
-    }, this), 777)
-  }
-
   Waterfall.prototype.compassWatch = function () {
     this.compassTimerId = setInterval($.proxy(function () {
       if (this.$element.closest('body').length < 1) { // Check if user had left the page.
@@ -260,37 +252,13 @@
   }
 
   Waterfall.prototype.destroy = function () {
+    $(window).off('scroll.mystist.waterfall' + this.id)
+    $(window).off('resize.mystist.waterfall' + this.id)
     this
-      .unbindScroll()
-      .unbindResize()
       .compassUnwatch()
       .$element
         .empty()
         .removeData('mystist.waterfall')
-
-    return this
-  }
-
-  Waterfall.prototype.bindScroll = function () {
-    $(window).on('scroll', this.scrollCallback)
-
-    return this
-  }
-
-  Waterfall.prototype.unbindScroll = function () {
-    $(window).off('scroll', this.scrollCallback)
-
-    return this
-  }
-
-  Waterfall.prototype.bindResize = function () {
-    $(window).on('resize', this.resizeCallback)
-
-    return this
-  }
-
-  Waterfall.prototype.unbindResize = function () {
-    $(window).off('resize', this.resizeCallback)
 
     return this
   }
