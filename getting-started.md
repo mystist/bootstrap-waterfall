@@ -79,7 +79,7 @@ Of cause, you will need to add some styles for the markups at first. I guess you
 
 ## Q&A:  
 - #### Those markups will load before the plugin runs, so do we need to pre set the width and height for images? or the plugin will wait for all the images loaded?  
-  No need. The plugin will cancel all the image request at first. Then send new asynchronous request to load a few images which list in the front. Then repeat this process when we scrolled down near the bottom.
+  No need. The plugin will cancel all the image request at first. Then send new asynchronous request to load a few images which is in the front. Then repeat this process when we scrolled down near the bottom.
 
 - #### But I don't want to show those markups in the beginning. I just want to show them when it's ready.  
   There are options, we can put those markups in a `script` tag with a special type, so the browser will ignore it:
@@ -103,3 +103,21 @@ Of cause, you will need to add some styles for the markups at first. I guess you
     ```javascript
     $('#waterfall-container').waterfall();
     ```
+
+***
+
+## Documentation
+
+#### Setup  
+- Install `Nodejs` on your computer.
+- Install `yo` and other required tools:
+```bash
+npm install -g yo bower grunt-cli gulp
+```
+- [Clone](https://github.com/Mystist/bootstrap-waterfall) the latest source code.
+- Run `npm install`, `bower install` to install devDependencies.
+- Run `gulp`. Make sure you can see `Finished 'build' after xxx ms`. Congratulations!
+
+#### Examples
+- Run `gulp serve` to see the demo.
+- Enjoy and [CONTRIBUTING](https://github.com/Mystist/bootstrap-waterfall/blob/master/CONTRIBUTING.md) :beers:
