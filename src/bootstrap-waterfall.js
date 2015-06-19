@@ -148,7 +148,7 @@
     this.$container.append($clone.css('opacity', 0))
 
     this.pinWidth = $clone.outerWidth(true)
-    this.imgWidth = $clone.find('img:eq(0)').width()
+    this.imgWidth = $clone.find('img:eq(0)').css('width', '100%').width()
 
     $clone.remove()
 
