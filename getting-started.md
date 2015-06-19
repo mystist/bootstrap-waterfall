@@ -36,35 +36,35 @@ That's it!
 Those markups within the `waterfall-container` should be a repeated list:  
 
 ```html
-<ul><img src="" /></ul>
-<ul><img src="" /></ul>
-<ul><img src="" /></ul>
+<ul class="pin"><img src="" /></ul>
+<ul class="pin"><img src="" /></ul>
+<ul class="pin"><img src="" /></ul>
 
 or
 
-<div><img src="" /></div>
-<div><img src="" /></div>
-<div><img src="" /></div>
+<div class="pin"><img src="" /></div>
+<div class="pin"><img src="" /></div>
+<div class="pin"><img src="" /></div>
 ```
 
 For instance:  
 
 ```html
-<ul class="list-group">
+<ul class="pin list-group">
   <li class="list-group-item">
     <a href="javascript:;">
       <img src="images/1.jpg" />
     </a>
   </li>
 </ul>
-<ul class="list-group">
+<ul class="pin list-group">
   <li class="list-group-item">
     <a href="javascript:;">
       <img src="images/2.jpg" />
     </a>
   </li>
 </ul>
-<ul class="list-group">
+<ul class="pin list-group">
   <li class="list-group-item">
     <a href="javascript:;">
       <img src="images/3.jpg" />
@@ -75,6 +75,24 @@ For instance:
 
 Of cause, you will need to add some styles for the markups at first. I guess you've already done that!
 
+Keep in mind:  
+
+- `<img />` tag should always has a tag wrap it. Let's say:  
+    
+    ```html
+    <div class="pin">
+      <img src="images/3.jpg" />
+    </div>
+    ```
+    
+- Should preset a `width` style for a pin:  
+    
+    ```html
+      .waterfall .pin {
+        width: 200px;
+      }
+    ```
+  
 ***
 
 ## Q&A:  
@@ -86,9 +104,9 @@ Of cause, you will need to add some styles for the markups at first. I guess you
     
     ```html
     <script id="waterfall-template" type="text/template">
-      <ul><img src="" /></ul>
-      <ul><img src="" /></ul>
-      <ul><img src="" /></ul>
+      <ul class="pin"><img src="" /></ul>
+      <ul class="pin"><img src="" /></ul>
+      <ul class="pin"><img src="" /></ul>
     </script>
     ```
     
@@ -120,4 +138,3 @@ npm install -g yo bower grunt-cli gulp
 
 #### Examples
 - Run `gulp serve` to see the demo.
-- Enjoy and [CONTRIBUTING](https://github.com/Mystist/bootstrap-waterfall/blob/master/CONTRIBUTING.md) :beers:
