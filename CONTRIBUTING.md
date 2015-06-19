@@ -31,11 +31,11 @@ Bootstrap-waterfall is fairly simple, enjoy your contributing, happy coding!
     * :tada: `:tada:` when none of those above you want to use
 
 ## Todo
-* Prepare gh-pages.
 * Write test cases.
 * CI
 
 ## Done
+* Prepare gh-pages.
 * Support simple usage.
 * Try on [JiaDingWaiMai](https://github.com/Mystist/JiaDingWaiMai).
 * Update Yeoman generater.
