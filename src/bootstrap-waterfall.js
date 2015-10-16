@@ -373,7 +373,7 @@
       );
     },
     // http://underscorejs.org/ (1.7.0), modified.
-    indexOf: function(array, item) {
+    indexOf: function (array, item) {
       if (array == null) return -1;
       var i = 0, length = array.length;
       for (; i < length; i++) if (array[i] === item) return i;
