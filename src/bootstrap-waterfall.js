@@ -105,7 +105,7 @@
     }, this), 777))
   }
 
-  Waterfall.VERSION = '0.2.2'
+  Waterfall.VERSION = '0.2.3'
 
   Waterfall.DEFAULTS = {
   }

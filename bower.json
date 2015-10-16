@@ -1,6 +1,6 @@
 {
   "name": "bootstrap-waterfall",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "dependencies": {
     "jquery": "~2.1.3"
   },
