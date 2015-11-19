@@ -1,6 +1,6 @@
 {
-  "name": "templs",
-  "version": "0.2.3",
+  "name": "bootstrap-waterfall",
+  "version": "0.2.4",
   "dependencies": {
     "jquery": "~2.1.3"
   },
