@@ -313,9 +313,11 @@
     this.$pins.each(function () {
       var img = new Image()
       img.src = $(this).data('bootstrap-waterfall-src')
-      var pin = new Pin(img)
-      that.tasks.push(pin)
-      $(this).data('bootstrap-waterfall-pin', pin)
+      img.onload = function (evt){
+          var pin = new Pin(this)
+          that.tasks.push(pin)
+          $(this).data('bootstrap-waterfall-pin', pin)
+      }
     })
 
     return this
