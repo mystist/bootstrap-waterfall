@@ -119,16 +119,8 @@
   }
 
   Waterfall.prototype.initPins = function () {
-    var $pins = this.$element.children().length > 0 ? this.$element.children().remove() : $(this.$element.data('bootstrap-waterfall-template'))
-
-    $pins.each(function () {
-      var $img = $(this).find('img:eq(0)')
-      if ($img.length > 0) {
-        $(this).data('bootstrap-waterfall-src', $img.attr('src'))
-        $img.attr('src', 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==')
-      }
-    })
-    this.$pins = $pins
+    var $elements = this.$element.children().length > 0 ? this.$element.children().remove() : $(this.$element.data('bootstrap-waterfall-template'))
+    this.$pins = self.decorate($elements)
 
     return this
   }
@@ -249,7 +241,21 @@
     return this
   }
 
+  Waterfall.prototype.addPins = function ($elements) {
+    this.$pins = this.$pins.add(self.decorate($elements))
+  }
+
   var self = {
+    decorate: function ($elements) {
+      return $elements.map(function () {
+        var $img = $(this).find('img:eq(0)')
+        if ($img.length > 0) {
+          $(this).data('bootstrap-waterfall-src', $img.attr('src'))
+          $img.attr('src', 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==')
+          return this
+        }
+      })
+    },
     getToLoadPins: function () {
       var counts = parseInt((this.$container.width() / this.pinWidth), 10)
       var steps = counts * 3
