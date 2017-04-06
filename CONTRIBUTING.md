@@ -31,7 +31,8 @@ Bootstrap-waterfall is fairly simple, enjoy your contributing, happy coding!
     * :tada: `:tada:` when none of those above you want to use
 
 ## Todo
-* Write test cases.
+* Rewrite with ES2015
+* Write test cases
 * CI
 
 ## Done
