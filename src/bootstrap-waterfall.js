@@ -319,12 +319,9 @@
     this.$pins.each(function () {
       var img = new Image()
       img.src = $(this).data('bootstrap-waterfall-src')
-      // https://github.com/Mystist/bootstrap-waterfall/pull/2
-      img.onload = function () {
-        var pin = new Pin(this)
-        that.tasks.push(pin)
-        $(this).data('bootstrap-waterfall-pin', pin)
-      }
+      var pin = new Pin(img)
+      that.tasks.push(pin)
+      $(this).data('bootstrap-waterfall-pin', pin)
     })
 
     return this
