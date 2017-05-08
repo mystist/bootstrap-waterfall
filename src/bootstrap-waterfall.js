@@ -358,9 +358,18 @@
     this.img = img
     this.initialWidth = img.width
     this.initialHeight = img.height
+
+    this.img.isError = false
+    this.img.onerror = function () {
+      this.isError = true
+    }
   }
 
   Pin.prototype.isLoaded = function () {
+    if (this.img.isError) {
+      return true
+    }
+
     if (this.img.width !== this.initialWidth || this.img.height !== this.initialHeight || this.img.width * this.img.height > 1024) { // Thanks TangBin.
       return true
     } else {
