@@ -122,16 +122,29 @@ Keep in mind:
     $('#waterfall-container').waterfall();
     ```
 
+- #### How to use it with ajax?
+    An example here:
+
+    ```javascript
+      $('.waterfall')
+        .data('bootstrap-waterfall-template', $('#waterfall-template').html())
+        .on('finishing.mystist.waterfall', function () {
+          setTimeout(function () { // simulate ajax
+            $('.waterfall').data('mystist.waterfall').addPins($($('#another-template').html()))
+          }, 2000);
+        })
+        .waterfall()
+    ```
+
+    The `finishing` event will be fired when scroll to the bottom with no more pins to be loaded.  
+    You can also refer to this issue here: [#9](https://github.com/Mystist/bootstrap-waterfall/issues/9)
 ***
 
 ## Documentation
 
 #### Setup  
-- Install `Nodejs` on your computer.
-- Install `yo` and other required tools:
-```bash
-npm install -g yo bower grunt-cli gulp
-```
+- Install `Nodejs` on your computer. (Please use node 4)
+- Install `yo` and other required tools: `npm install -g yo bower grunt-cli gulp`
 - [Clone](https://github.com/Mystist/bootstrap-waterfall) the latest source code.
 - Run `npm install`, `bower install` to install devDependencies.
 - Run `gulp`. Make sure you can see `Finished 'build' after xxx ms`. Congratulations!
