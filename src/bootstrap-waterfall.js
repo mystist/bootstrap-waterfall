@@ -184,6 +184,11 @@
       if (self.isWantMore.call(this)) {
         $(window).off('scroll.mystist.waterfall' + this.id)
         this.sail()
+
+        var remainingPinsCounts = self.getRemainingPins.call(this).length
+        if (remainingPinsCounts <= self.getSteps.call(this) && remainingPinsCounts > 0) {
+          this.$element.trigger('finishing.mystist.waterfall')
+        }
       }
     }, this), 500))
 
@@ -243,6 +248,7 @@
 
   Waterfall.prototype.addPins = function ($elements) {
     this.$pins = this.$pins.add(self.decorate($elements))
+    $(window).trigger('scroll.mystist.waterfall' + this.id)
   }
 
   var self = {
@@ -256,17 +262,18 @@
         }
       })
     },
-    getToLoadPins: function () {
-      var counts = parseInt((this.$container.width() / this.pinWidth), 10)
-      var steps = counts * 3
-
-      var $remainPins = this.$pins.map(function () {
+    getRemainingPins: function () {
+      return this.$pins.map(function () {
         if ($(this).find('img').length > 0 && $(this).data('bootstrap-waterfall-src')) {
           return $(this)
         }
       })
-
-      return $remainPins.slice(0, steps)
+    },
+    getSteps: function () {
+      return parseInt((this.$container.width() / this.pinWidth), 10) * 3
+    },
+    getToLoadPins: function () {
+      return self.getRemainingPins.call(this).slice(0, self.getSteps.call(this))
     },
     getLoadedPins: function () {
       var $loadedPins = this.$pins.map(function () {
