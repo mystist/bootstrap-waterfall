@@ -2,7 +2,7 @@
  * bootstrap-waterfall
  *
  *
- * Copyright (c) 2014-2017
+ * Copyright (c) 2014-2018
  * Licensed under the MIT license.
  */
 
@@ -105,7 +105,7 @@
     }, this), 777))
   }
 
-  Waterfall.VERSION = '0.2.6'
+  Waterfall.VERSION = '0.2.7'
 
   Waterfall.DEFAULTS = {
   }
