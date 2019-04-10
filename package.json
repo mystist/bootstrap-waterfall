@@ -1,6 +1,6 @@
 {
   "name": "bootstrap-waterfall",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Waterfall the world beauty.",
   "keywords": [
     "jquery-plugin",
@@ -19,7 +19,7 @@
     "type": "git",
     "url": "https://github.com/Mystist/bootstrap-waterfall.git"
   },
-  "license": "MIT",
+  "license": "Anti 996",
   "engines": {
     "node": ">=0.12.0"
   },
