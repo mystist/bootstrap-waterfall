@@ -5,6 +5,7 @@
 > Waterfall the world beauty.
 
 Bootstrap-waterfall renders your images like [Pinterest](https://www.pinterest.com/).  
+Zero configuration, just `$('.waterfall').waterfall()`   
 Fork it and [CONTRIBUTING](https://github.com/Mystist/bootstrap-waterfall/blob/master/CONTRIBUTING.md), it's fairly simple.
 
 #### Why named as bootstrap?

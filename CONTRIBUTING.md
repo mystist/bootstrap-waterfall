@@ -42,3 +42,6 @@ Bootstrap-waterfall is fairly simple, enjoy your contributing, happy coding!
 * Update Yeoman generater.
 * Fix the way of getting pin's width when resize with responsive layout.
 * Explain why named as bootstrap.
+* DOC: zero configuration.
+* DOC: add css codes for responsive view.  
+  https://github.com/Mystist/bootstrap-waterfall/issues/5
