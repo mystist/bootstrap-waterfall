@@ -88,9 +88,9 @@ Keep in mind:
 - Should preset a `width` style for a pin:  
     
     ```html
-      .waterfall .pin {
-        width: 200px;
-      }
+    .waterfall .pin {
+      width: 200px;
+    }
     ```
   
 ***
@@ -126,18 +126,67 @@ Keep in mind:
     An example here:
 
     ```javascript
-      $('.waterfall')
-        .data('bootstrap-waterfall-template', $('#waterfall-template').html())
-        .on('finishing.mystist.waterfall', function () {
-          setTimeout(function () { // simulate ajax
-            $('.waterfall').data('mystist.waterfall').addPins($($('#another-template').html()))
-          }, 2000);
-        })
-        .waterfall()
+    $('.waterfall')
+      .data('bootstrap-waterfall-template', $('#waterfall-template').html())
+      .on('finishing.mystist.waterfall', function () {
+        setTimeout(function () { // simulate ajax
+          $('.waterfall').data('mystist.waterfall').addPins($($('#another-template').html()))
+        }, 2000);
+      })
+      .waterfall()
     ```
 
     The `finishing` event will be fired when scroll to the bottom with no more pins to be loaded.  
     You can also refer to this issue here: [#9](https://github.com/Mystist/bootstrap-waterfall/issues/9)
+
+- #### How to style my pins and make my pins responsive?
+    We need to set a width of each pin via css, and also for responsive case:
+
+    ```css
+    .waterfall {
+      .list-group {
+        margin-right: 14px;
+
+        > li:first-child {
+          padding: 0;
+          background-color: white;
+
+          img {
+            width: 100%;
+            border-top-right-radius: 4px;
+            border-top-left-radius: 4px;
+          }
+        }
+
+        > li {
+          background-color: #f5f5f5;
+        }
+      }
+    }
+
+    @media (min-width: 768px) {
+      .waterfall {
+        .list-group {
+          width: 346px;
+        }
+      }
+    }
+    @media (min-width: 992px) {
+      .waterfall {
+        .list-group {
+          width: 299px;
+        }
+      }
+    }
+    @media (min-width: 1200px) {
+      .waterfall {
+        .list-group {
+          width: 271px;
+        }
+      }
+    }
+    ```
+
 ***
 
 ## Documentation
